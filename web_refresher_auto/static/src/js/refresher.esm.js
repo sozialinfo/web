@@ -19,8 +19,10 @@ patch(Refresher.prototype, "autorefresher_functions", {
 
         this.autoRefresherIntervalTime = this.props.autoRefresherIntervalTime || 60000;
 
+        const autoRefresherEnabled =
+            localStorage.getItem("autoRefresherEnabled") === "true";
         this.state = useState({
-            autoRefresherEnabled: false,
+            autoRefresherEnabled: autoRefresherEnabled,
         });
 
         this.setupAutoRefresher();
@@ -52,7 +54,6 @@ patch(Refresher.prototype, "autorefresher_functions", {
      */
     setupAutoRefresher() {
         if (this.state.autoRefresherEnabled) {
-            this.onClickRefresh();
             this.autoRefresherInterval = setInterval(() => {
                 this.onClickRefresh();
             }, this.autoRefresherIntervalTime);
@@ -74,6 +75,7 @@ patch(Refresher.prototype, "autorefresher_functions", {
      */
     onClickToggleAutoRefresher() {
         this.state.autoRefresherEnabled = !this.state.autoRefresherEnabled;
+        localStorage.setItem("autoRefresherEnabled", this.state.autoRefresherEnabled);
         this.clearAutoRefresher();
         if (this.state.autoRefresherEnabled) {
             this.setupAutoRefresher();
