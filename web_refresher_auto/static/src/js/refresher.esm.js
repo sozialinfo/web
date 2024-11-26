@@ -2,7 +2,7 @@
 /* Copyright 2024 Miika Nissi (https://miikanissi.com)
 /* License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
 
-import {onWillUpdateProps, useState} from "@odoo/owl";
+import {onWillUnmount, onWillUpdateProps, useState} from "@odoo/owl";
 import {Refresher} from "@web_refresher/js/refresher.esm";
 import {patch} from "web.utils";
 
@@ -45,6 +45,15 @@ patch(Refresher.prototype, "autorefresher_functions", {
                 }
             }
         });
+
+        /**
+         * Lifecycle method called before the component is unmounted.
+         * Clears the auto-refresh interval to prevent memory leaks.
+         *
+         */
+        onWillUnmount(() => {
+            this.clearAutoRefresher();
+        });
     },
 
     /**
@@ -53,7 +62,7 @@ patch(Refresher.prototype, "autorefresher_functions", {
      * at the specified interval time.
      */
     setupAutoRefresher() {
-        if (this.state.autoRefresherEnabled) {
+        if (this.state.autoRefresherEnabled && this.displayButton) {
             this.autoRefresherInterval = setInterval(() => {
                 this.onClickRefresh();
             }, this.autoRefresherIntervalTime);
@@ -80,17 +89,6 @@ patch(Refresher.prototype, "autorefresher_functions", {
         if (this.state.autoRefresherEnabled) {
             this.setupAutoRefresher();
         }
-    },
-
-    /**
-     * Lifecycle method called before the component is unmounted.
-     * Clears the auto-refresh interval to prevent memory leaks.
-     *
-     * @override
-     */
-    willUnmount() {
-        this.clearAutoRefresher();
-        super.willUnmount();
     },
 });
 
