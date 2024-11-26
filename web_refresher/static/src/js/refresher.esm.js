@@ -29,11 +29,17 @@ export function useRefreshAnimation(timeout) {
 
     function animate() {
         clearAnimationTimeout();
-        contentClassList().add(refreshClass);
-        timeoutId = setTimeout(() => {
-            contentClassList().remove(refreshClass);
-            clearAnimationTimeout();
-        }, timeout);
+        let classList = contentClassList();
+        if (classList) {
+            classList.add(refreshClass);
+            timeoutId = setTimeout(() => {
+                classList = contentClassList();
+                if (classList && classList.contains(refreshClass)) {
+                    classList.remove(refreshClass);
+                }
+                clearAnimationTimeout();
+            }, timeout);
+        }
     }
 
     return animate;
