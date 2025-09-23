@@ -1,12 +1,11 @@
-/** @odoo-module **/
 /* Copyright 2024 Miika Nissi (https://miikanissi.com)
 /* License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
 
 import {onWillUnmount, onWillUpdateProps, useState} from "@odoo/owl";
 import {Refresher} from "@web_refresher/js/refresher.esm";
-import {patch} from "web.utils";
+import {patch} from "@web/core/utils/patch";
 
-patch(Refresher.prototype, "autorefresher_functions", {
+patch(Refresher.prototype, {
     /**
      * Initializes the component and sets up the auto-refresh functionality.
      * It retrieves the auto-refresh interval time from the props or defaults to 1 minute.
@@ -15,7 +14,7 @@ patch(Refresher.prototype, "autorefresher_functions", {
      * @override
      */
     setup() {
-        this._super(...arguments);
+        super.setup();
 
         this.autoRefresherIntervalTime = this.props.autoRefresherIntervalTime || 60000;
 
@@ -62,7 +61,7 @@ patch(Refresher.prototype, "autorefresher_functions", {
      * at the specified interval time.
      */
     setupAutoRefresher() {
-        if (this.state.autoRefresherEnabled && this.displayButton) {
+        if (this.state.autoRefresherEnabled) {
             this.autoRefresherInterval = setInterval(() => {
                 this.onClickRefresh();
             }, this.autoRefresherIntervalTime);
@@ -95,7 +94,7 @@ patch(Refresher.prototype, "autorefresher_functions", {
 /**
  * @property {Number} autoRefresherIntervalTime
  */
-patch(Refresher, "add_auto_refresher_props", {
+patch(Refresher, {
     props: {
         ...Refresher.props,
         autoRefresherIntervalTime: {type: Number, optional: true},

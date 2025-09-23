@@ -3,7 +3,7 @@
 
 {
     "name": "Web Refresher Auto",
-    "version": "16.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Hidden",
     "author": "Miika Nissi, Odoo Community Association (OCA)",
     "license": "AGPL-3",
