@@ -1,0 +1,102 @@
+/* Copyright 2024 Miika Nissi (https://miikanissi.com)
+/* License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
+
+import {onWillUnmount, onWillUpdateProps, useState} from "@odoo/owl";
+import {Refresher} from "@web_refresher/js/refresher.esm";
+import {patch} from "@web/core/utils/patch";
+
+patch(Refresher.prototype, {
+    /**
+     * Initializes the component and sets up the auto-refresh functionality.
+     * It retrieves the auto-refresh interval time from the props or defaults to 1 minute.
+     * It also initializes the auto-refresh state to be disabled by default.
+     *
+     * @override
+     */
+    setup() {
+        super.setup();
+
+        this.autoRefresherIntervalTime = this.props.autoRefresherIntervalTime || 60000;
+
+        const autoRefresherEnabled =
+            localStorage.getItem("autoRefresherEnabled") === "true";
+        this.state = useState({
+            autoRefresherEnabled: autoRefresherEnabled,
+        });
+
+        this.setupAutoRefresher();
+
+        /**
+         * Lifecycle method called before the component's props are updated.
+         * Clears and sets up the auto-refresher if the interval time has changed.
+         *
+         * @param {Object} nextProps - The next set of props.
+         */
+        onWillUpdateProps((nextProps) => {
+            if (
+                nextProps.autoRefresherIntervalTime !==
+                this.props.autoRefresherIntervalTime
+            ) {
+                this.clearAutoRefresher();
+                this.autoRefresherIntervalTime = nextProps.autoRefresherIntervalTime;
+                if (this.state.autoRefresherEnabled) {
+                    this.setupAutoRefresher();
+                }
+            }
+        });
+
+        /**
+         * Lifecycle method called before the component is unmounted.
+         * Clears the auto-refresh interval to prevent memory leaks.
+         *
+         */
+        onWillUnmount(() => {
+            this.clearAutoRefresher();
+        });
+    },
+
+    /**
+     * Sets up the auto-refresh functionality.
+     * If auto-refresh is enabled, it sets an interval to call the refresh function
+     * at the specified interval time.
+     */
+    setupAutoRefresher() {
+        if (this.state.autoRefresherEnabled) {
+            this.autoRefresherInterval = setInterval(() => {
+                this.onClickRefresh();
+            }, this.autoRefresherIntervalTime);
+        }
+    },
+
+    /**
+     * Clears the auto-refresh interval if it is set.
+     */
+    clearAutoRefresher() {
+        if (this.autoRefresherInterval) {
+            clearInterval(this.autoRefresherInterval);
+        }
+    },
+
+    /**
+     * Toggles the auto-refresh functionality on or off.
+     * It updates the auto-refresh state and sets up or clears the auto-refresh interval accordingly.
+     */
+    onClickToggleAutoRefresher() {
+        this.state.autoRefresherEnabled = !this.state.autoRefresherEnabled;
+        localStorage.setItem("autoRefresherEnabled", this.state.autoRefresherEnabled);
+        this.clearAutoRefresher();
+        if (this.state.autoRefresherEnabled) {
+            this.setupAutoRefresher();
+        }
+    },
+});
+
+/**
+ * @property {Number} autoRefresherIntervalTime
+ */
+patch(Refresher, {
+    props: {
+        ...Refresher.props,
+        autoRefresherIntervalTime: {type: Number, optional: true},
+    },
+});
